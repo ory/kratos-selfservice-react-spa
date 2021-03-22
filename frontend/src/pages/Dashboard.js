@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -92,6 +92,7 @@ function Dashboard() {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const [userIdentity, setUserIdentity] = useState();
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -104,6 +105,14 @@ function Dashboard() {
   const handleLogOut = () => {
     window.location.href = "http://127.0.0.1:4433/self-service/browser/flows/logout";
   }
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:4433/sessions/whoami", {credentials: "include"})
+      .then(response => response.json())
+      .then(data => {
+        setUserIdentity(data);
+      })
+  }, []);
 
   return (
     <>
