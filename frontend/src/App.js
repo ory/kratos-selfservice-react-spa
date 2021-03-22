@@ -35,6 +35,9 @@ function App() {
           <Route path="/recovery">
             <Recovery />
           </Route>
+          <Route path="/">
+            <Login />
+          </Route>
         </Switch>
       </Router>
     </>

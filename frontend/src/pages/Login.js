@@ -9,6 +9,7 @@ import Grid from '@material-ui/core/Grid';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import { Configuration, PublicApi } from '@ory/kratos-client';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -46,6 +47,34 @@ const useStyles = makeStyles((theme) => ({
 
 function Login() {
   const classes = useStyles();
+  
+  const [formUsernamePasswordAction, setFormUsernamePasswordAction] = useState();
+  const [csrfUsernamePasswordToken, setCsrfUsernamePasswordToken] = useState();
+
+  const kratos = new PublicApi(new Configuration({ basePath: 'http://127.0.0.1:4433' }));
+  
+  useEffect(() => {
+    if (!(new URL(document.location)).searchParams.get("flow")) {
+        window.location.href = "http://127.0.0.1:4433/self-service/login/browser";
+    }
+    const flowId = (new URL(document.location)).searchParams.get("flow");
+    kratos.getSelfServiceLoginFlow(flowId)
+        .then(({ status, data: flow }) => {
+            if (status === 404 || status === 410 || status === 403) {
+                return window.location.replace("http://127.0.0.1:4433/self-service/login/browser")
+            }
+            if (status !== 200) {
+                return Promise.reject(flow);
+            }
+            setFormUsernamePasswordAction(JSON.stringify(flow.methods.password.config.action).replaceAll('"',''));
+            setCsrfUsernamePasswordToken(JSON.stringify(flow.methods.password.config.fields[2].value).replaceAll('"',''));
+
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+  }, [csrfUsernamePasswordToken])
+
   return (
     <>
       <Grid container component="main" className={classes.root}>
@@ -59,11 +88,10 @@ function Login() {
                     <Typography component="h1" variant="h5">
                         Sign in
                     </Typography>
-                    {/* <form className={classes.form} action={formUsernamePasswordAction} method="POST"> */}
+                    <form className={classes.form} action={formUsernamePasswordAction} method="POST">
                         <TextField
                         variant="outlined"
                         margin="normal"
-                        // required
                         fullWidth
                         id="identifier"
                         type="text"
@@ -76,7 +104,6 @@ function Login() {
                         <TextField
                         variant="outlined"
                         margin="normal"
-                        // required
                         fullWidth
                         name="password"
                         label="Password"
@@ -102,10 +129,10 @@ function Login() {
                         fullWidth
                         variant="outlined"
                         label="Csrf token"
-                        // value={csrfUsernamePasswordToken}
+                        value={csrfUsernamePasswordToken}
                         className={classes.csrf}
                         />
-                    {/* </form> */}
+                    </form>
                         
                     <Grid container>
                     <Grid item xs>

@@ -102,7 +102,7 @@ function Dashboard() {
   };
 
   const handleLogOut = () => {
-    // window.location.href = "http://127.0.0.1:4433/self-service/browser/flows/logout";
+    window.location.href = "http://127.0.0.1:4433/self-service/browser/flows/logout";
   }
 
   return (

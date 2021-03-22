@@ -9,6 +9,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import { Configuration, PublicApi } from '@ory/kratos-client';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -35,6 +36,38 @@ const useStyles = makeStyles((theme) => ({
 
 function Register() {
   const classes = useStyles();
+
+  const [formAction, setFormAction] = useState();
+  const [firstName, setFirstName] = useState();
+  const [lastName, setLastName] = useState();
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
+  const [csrfToken, setCsrfToken] = useState();
+
+  const kratos = new PublicApi(new Configuration({ basePath: 'http://127.0.0.1:4433' }));
+
+
+  useEffect(() => {
+    if (!(new URL(document.location)).searchParams.get("flow") && (new URL(document.location)).href.indexOf("register") !== -1) {
+        window.location.href = "http://127.0.0.1:4433/self-service/registration/browser";
+    }
+    const flowId = (new URL(document.location)).searchParams.get("flow");
+    kratos.getSelfServiceRegistrationFlow(flowId)
+        .then(({ status, data: flow }) => {
+            if (status === 404 || status === 410 || status === 403) {
+                return window.location.replace("http://127.0.0.1:4433/self-service/registration/browser")
+            }
+            if (status !== 200) {
+                return Promise.reject(flow);
+            }
+            setFormAction(JSON.stringify(flow.methods.password.config.action).replaceAll('"',''));
+            setCsrfToken(JSON.stringify(flow.methods.password.config.fields[0].value).replaceAll('"',''));
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+  }, [csrfToken])
+
   return (
     <>
         <Container component="main" maxWidth="xs">
@@ -46,7 +79,7 @@ function Register() {
                 <Typography component="h1" variant="h5">
                 Sign up
                 </Typography>
-                {/* <form className={classes.form} action={formAction} method="POST" noValidate> */}
+                <form className={classes.form} action={formAction} method="POST" noValidate>
                   <TextField
                     name="csrf_token"
                     id="csrf_token"
@@ -55,7 +88,7 @@ function Register() {
                     fullWidth
                     variant="outlined"
                     label="Csrf token"
-                    // value={csrfToken}
+                    value={csrfToken}
                     className={classes.csrf}
                   />
                   <Grid container spacing={2}>
@@ -71,7 +104,7 @@ function Register() {
                           label="First Name"
                           autoFocus
                           onChange={(event) => {
-                            // setFirstName(event.target.value);
+                            setFirstName(event.target.value);
                           }}
                       />
                       </Grid>
@@ -85,7 +118,7 @@ function Register() {
                           name="traits.name.last"
                           autoComplete="lname"
                           onChange={(event) => {
-                            // setLastName(event.target.value);
+                            setLastName(event.target.value);
                           }}
                       />
                       </Grid>
@@ -100,7 +133,7 @@ function Register() {
                           name="traits.email"
                           autoComplete="email"
                           onChange={(event) => {
-                            // setEmail(event.target.value);
+                            setEmail(event.target.value);
                           }}
                       />
                       </Grid>
@@ -115,7 +148,7 @@ function Register() {
                           id="password"
                           autoComplete="current-password"
                           onChange={(event) => {
-                            // setPassword(event.target.value);
+                            setPassword(event.target.value);
                           }}
                       />
                       </Grid>
@@ -126,7 +159,6 @@ function Register() {
                       variant="contained"
                       color="primary"
                       className={classes.submit}
-                      // onClick={handleSignUp}
                   >
                       Sign Up
                   </Button>
@@ -137,7 +169,7 @@ function Register() {
                       </Link>
                       </Grid>
                   </Grid>
-                {/* </form> */}
+                </form>
             </div>
         </Container>
     </>

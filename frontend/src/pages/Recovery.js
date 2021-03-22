@@ -9,6 +9,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
+import { Configuration, PublicApi } from '@ory/kratos-client';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -35,6 +36,35 @@ const useStyles = makeStyles((theme) => ({
 
 function Recovery() {
   const classes = useStyles();
+
+  const [csrfToken, setCsrfToken] = useState();
+  const [formAction, setFormAction] = useState();
+
+  const kratos = new PublicApi(new Configuration({ basePath: 'http://127.0.0.1:4433' }));
+
+  useEffect(() => {
+      if (!(new URL(document.location)).searchParams.get("flow") && (new URL(document.location)).href.indexOf("recovery") !== -1) {
+        window.location.href = "http://127.0.0.1:4433/self-service/recovery/browser";
+      }
+      const flowId = (new URL(document.location)).searchParams.get("flow");
+      kratos.getSelfServiceRecoveryFlow(flowId)
+        .then(({ status, data: flow }) => {
+            if (status === 404 || status === 410 || status === 403) {
+            return window.location.replace("http://127.0.0.1:4433/self-service/recovery/browser")
+            }
+            if (status !== 200) {
+            return Promise.reject(flow);
+            }
+
+            setCsrfToken(JSON.stringify(flow.methods.link.config.fields[0].value).replaceAll('"',''));
+            setFormAction(JSON.stringify(flow.methods.link.config.action).replaceAll('"',''));
+
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+  }, [csrfToken])
+
   return (
     <>
       <Container component="main" maxWidth="xs">
@@ -46,7 +76,7 @@ function Recovery() {
                 <Typography component="h1" variant="h5">
                 Reset password
                 </Typography>
-                {/* <form className={classes.form} action={formAction} method="POST" noValidate> */}
+                <form className={classes.form} action={formAction} method="POST" noValidate>
                   <TextField
                       variant="outlined"
                       margin="normal"
@@ -82,10 +112,10 @@ function Recovery() {
                       fullWidth
                       variant="outlined"
                       label="Csrf token"
-                    //   value={csrfToken}
+                      value={csrfToken}
                       className={classes.csrf}
                     />
-                {/* </form> */}
+                </form>
             </div>
         </Container>
     </>
