@@ -1,0 +1,100 @@
+
+identity:
+  default_schema_url: file:///etc/config/kratos/identity.schema.json
+
+selfservice:
+  methods:
+    password:
+      enabled: true
+    link:
+      enabled: true
+
+  default_browser_return_url: http://127.0.0.1:3000/dashboard
+  whitelisted_return_urls:
+    - http://127.0.0.1:3000/dashboard
+
+  flows:
+    logout:
+      after:
+        default_browser_return_url: http://127.0.0.1:3000/login
+    settings:
+      privileged_session_max_age: 15m
+      ui_url: http://127.0.0.1:3000/settings
+    error:
+      ui_url: http://127.0.0.1:3000/error
+    login:
+      ui_url: http://127.0.0.1:3000/login
+      lifespan: 10m
+    recovery:
+      enabled: true
+      ui_url: http://127.0.0.1:3000/recovery
+      after:
+        default_browser_return_url: http://127.0.0.1:3000/login
+    registration:
+      ui_url: http://127.0.0.1:3000/register
+      lifespan: 10m
+      after:
+        password:
+          hooks:
+            - hook: session
+          default_browser_return_url: http://127.0.0.1:3000/login
+        default_browser_return_url: http://127.0.0.1:3000/login
+
+serve:
+  admin:
+    base_url:  http://127.0.0.1:4434
+  public:
+    base_url: http://127.0.0.1:4433
+    cors:
+      enabled: true
+      allowed_origins:
+        - http://127.0.0.1:3000
+      allowed_methods:
+        - POST
+        - GET
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      allowed_headers:
+        - Authorization
+        - Content-Type
+        - X-Session-Token
+        - Cookie
+      exposed_headers:
+        - Content-Type
+        - Set-Cookie
+      allow_credentials: true
+      debug: true
+
+dsn: postgres://kratos:secret@postgresd:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+
+courier:
+  smtp:
+    connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
+
+log:
+  level: debug
+
+secrets:
+  cookie:
+    - PLEASE-CHANGE-ME-I-AM-VERY-INSECURE
+
+hashers:
+  argon2:
+    parallelism: 1
+    memory: 131072
+    iterations: 2
+    salt_length: 16
+    key_length: 16
+
+session:
+  lifespan: 24h
+  cookie:
+    domain: http://127.0.0.1:3000
+    same_site: Lax
+
+log:
+  level: debug
+  format: json
+  leak_sensitive_values: true
