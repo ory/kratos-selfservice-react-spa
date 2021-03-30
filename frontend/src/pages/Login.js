@@ -55,7 +55,7 @@ function Login() {
   
   const [formUsernamePasswordAction, setFormUsernamePasswordAction] = useState();
   const [csrfUsernamePasswordToken, setCsrfUsernamePasswordToken] = useState();
-  const [loginMessages, setLoginMessages] = useState(undefined);
+  const [loginMessages, setLoginMessages] = useState();
 
   const kratos = new PublicApi(new Configuration({ basePath: 'http://127.0.0.1:4433' }));
   
