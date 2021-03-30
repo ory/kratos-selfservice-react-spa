@@ -73,8 +73,6 @@ courier:
   smtp:
     connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
 
-log:
-  level: debug
 
 secrets:
   cookie:
