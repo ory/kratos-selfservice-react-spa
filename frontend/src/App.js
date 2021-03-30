@@ -37,7 +37,6 @@ function App() {
       <Router>
         <GuardProvider guards={[requireLogin]} error={Error}>
           <Switch>
-            <GuardedRoute path="/dashboard" exact component={Dashboard} meta={{ auth: true }} />
             <GuardedRoute path="/settings" exact component={Settings} meta={{ auth: true }} />
             <GuardedRoute path="/login" exact component={Login} />
             <GuardedRoute path="/register" exact component={Register} />
