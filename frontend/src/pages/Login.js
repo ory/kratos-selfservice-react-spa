@@ -6,6 +6,7 @@ import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
+import MuiAlert from '@material-ui/lab/Alert';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -45,11 +46,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 function Login() {
   const classes = useStyles();
   
   const [formUsernamePasswordAction, setFormUsernamePasswordAction] = useState();
   const [csrfUsernamePasswordToken, setCsrfUsernamePasswordToken] = useState();
+  const [loginMessages, setLoginMessages] = useState(undefined);
 
   const kratos = new PublicApi(new Configuration({ basePath: 'http://127.0.0.1:4433' }));
   
@@ -68,12 +74,13 @@ function Login() {
             }
             setFormUsernamePasswordAction(JSON.stringify(flow.methods.password.config.action).replaceAll('"',''));
             setCsrfUsernamePasswordToken(JSON.stringify(flow.methods.password.config.fields[2].value).replaceAll('"',''));
-
+            setLoginMessages(flow.methods.password.config.messages[0].text);
+            
         })
         .catch((err) => {
             console.log(err);
         })
-  }, [csrfUsernamePasswordToken])
+  }, [loginMessages])
 
   return (
     <>
@@ -147,6 +154,15 @@ function Login() {
                     </Grid>
                     </Grid>
                 </div>
+                {loginMessages
+                  ? (<>
+                      <Alert severity="error" style={{margin: "auto", width: "75%"}}>
+                        {loginMessages}
+                      </Alert>
+                  </>)
+                  : (<>
+                    </>)
+                }
             </Grid>
         </Grid>
     </>

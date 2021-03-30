@@ -5,6 +5,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
+import MuiAlert from '@material-ui/lab/Alert';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -34,6 +35,10 @@ const useStyles = makeStyles((theme) => ({
     },
   }));
 
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 function Register() {
   const classes = useStyles();
 
@@ -43,6 +48,7 @@ function Register() {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [csrfToken, setCsrfToken] = useState();
+  const [registerMessages, setRegisterMessages] = useState(undefined);
 
   const kratos = new PublicApi(new Configuration({ basePath: 'http://127.0.0.1:4433' }));
 
@@ -62,6 +68,7 @@ function Register() {
             }
             setFormAction(JSON.stringify(flow.methods.password.config.action).replaceAll('"',''));
             setCsrfToken(JSON.stringify(flow.methods.password.config.fields[0].value).replaceAll('"',''));
+            setRegisterMessages(flow.methods.password.config.fields[1].messages[0].text);
         })
         .catch((err) => {
             console.log(err);
@@ -171,6 +178,15 @@ function Register() {
                   </Grid>
                 </form>
             </div>
+            {registerMessages
+              ? (<>
+                  <Alert severity="error" style={{marginTop: "5%"}}>
+                    {registerMessages}
+                  </Alert>
+              </>)
+              : (<>
+                </>)
+            }
         </Container>
     </>
   );

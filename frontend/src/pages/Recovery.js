@@ -5,6 +5,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
+import MuiAlert from '@material-ui/lab/Alert';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
@@ -34,11 +35,16 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 function Recovery() {
   const classes = useStyles();
 
   const [csrfToken, setCsrfToken] = useState();
   const [formAction, setFormAction] = useState();
+  const [recoveryMessages, setRecoveryMessages] = useState(undefined);
 
   const kratos = new PublicApi(new Configuration({ basePath: 'http://127.0.0.1:4433' }));
 
@@ -58,12 +64,13 @@ function Recovery() {
 
             setCsrfToken(JSON.stringify(flow.methods.link.config.fields[0].value).replaceAll('"',''));
             setFormAction(JSON.stringify(flow.methods.link.config.action).replaceAll('"',''));
+            setRecoveryMessages(flow.messages[0].text)
 
         })
         .catch((err) => {
             console.log(err);
         })
-  }, [csrfToken])
+  }, [recoveryMessages])
 
   return (
     <>
@@ -117,6 +124,15 @@ function Recovery() {
                     />
                 </form>
             </div>
+            {recoveryMessages
+              ? (<>
+                  <Alert severity="success" style={{marginTop: "5%"}}>
+                    {recoveryMessages}
+                  </Alert>
+              </>)
+              : (<>
+                </>)
+            }
         </Container>
     </>
   );
