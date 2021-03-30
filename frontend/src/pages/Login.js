@@ -66,7 +66,7 @@ function Login() {
     const flowId = (new URL(document.location)).searchParams.get("flow");
     kratos.getSelfServiceLoginFlow(flowId)
         .then(({ status, data: flow }) => {
-            if (status === 404 || status === 410 || status === 403) {
+            if ([401, 403, 404].includes(status)) {
                 return window.location.replace("http://127.0.0.1:4433/self-service/login/browser")
             }
             if (status !== 200) {
